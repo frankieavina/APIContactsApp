@@ -14,11 +14,13 @@ router.post('/', async function getInfo(ctx,next){
 
     try{
         const cars = await ctx.state.db.query(
-        `INSERT INTO car (make_id, model, date_created)
-         VALUES (:make_id, :model, NOW())`,
+        `INSERT INTO car ( make, model, url)
+         VALUES ( :make, :model, :url)`,
             {
-                make_id: ctx.request.body.make_id,
-                model: ctx.request.body.model
+                //id: ctx.request.body.id,
+                make: ctx.request.body.make,
+                model: ctx.request.body.model,
+                url: ctx.request.body.url
             }
 
         );
@@ -34,13 +36,17 @@ router.put('/', async function getInfo(ctx,next){
 
 
     try{
-        const [cars] = await ctx.state.db.query(
-        `UPDATE car SET model = :model WHERE id = :id`
+        const cars = await ctx.state.db.query(
+        `UPDATE car SET make=:make, model=:model, url=:url 
+         WHERE (id = :id)`
         , {
                 id: ctx.request.body.id,
-                model: ctx.request.body.model
+                model: ctx.request.body.model,
+                make: ctx.request.body.make,
+                url: ctx.request.body.url
             }
         );
+        ctx.body = cars;
     }   catch (e){
         console.error(e);
     }
@@ -49,11 +55,23 @@ router.put('/', async function getInfo(ctx,next){
 //------------- get ----------------------
 router.get('/:id', async function getInfo(ctx,next){
 
-    // console.log(Object.keys(ctx));
-    // console.log(Object.keys(ctx.state));
 
 try{
     const [[cars]] = await ctx.state.db.query(`SELECT * FROM car WHERE id = :id`,{id: ctx.params.id});
+    console.log(ctx.request.query);
+    ctx.response.body = cars; 
+}   catch (e){
+        console.error(e);
+    }
+
+});
+
+//------------- get all cars ----------------------
+router.get('/', async function getInfo(ctx,next){
+
+
+try{
+    const [cars] = await ctx.state.db.query(`SELECT * FROM car`);
     console.log(ctx.request.query);
     ctx.response.body = cars; 
 }   catch (e){
